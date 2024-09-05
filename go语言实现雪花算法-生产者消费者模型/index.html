@@ -1,0 +1,283 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>go语言实现雪花算法+生产者消费者模型 | Ray-Box</title><meta name="author" content="WlayRay,1647421549@qq.com"><meta name="copyright" content="WlayRay"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="雪花算法由Twitter提出，用于在分布式环境下生成唯一且有序的64位整型ID，并且可以确保递增性。我在实习中经常见到使用雪花算法作为数据库主键，在ElectricSearch这个项目中则用作倒排索引中文档的ID。 算法原理与实现雪花算法的各个组成部分：    符号位(1位) 时间戳(41位) 机器ID(10位) 序列号(12位)     时间戳部分：占用了41位，用来记录生成ID的时间，单位为毫">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go语言实现雪花算法+生产者消费者模型">
+<meta property="og:url" content="https://wlayray.github.io/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:site_name" content="Ray-Box">
+<meta property="og:description" content="雪花算法由Twitter提出，用于在分布式环境下生成唯一且有序的64位整型ID，并且可以确保递增性。我在实习中经常见到使用雪花算法作为数据库主键，在ElectricSearch这个项目中则用作倒排索引中文档的ID。 算法原理与实现雪花算法的各个组成部分：    符号位(1位) 时间戳(41位) 机器ID(10位) 序列号(12位)     时间戳部分：占用了41位，用来记录生成ID的时间，单位为毫">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/152136925?s=400&u=9f42091737b71837cc84a6d182fd0abc2b3bfaee&v=4">
+<meta property="article:published_time" content="2024-09-05T06:29:17.000Z">
+<meta property="article:modified_time" content="2024-09-05T10:54:20.604Z">
+<meta property="article:author" content="WlayRay">
+<meta property="article:tag" content="后端算法（go语言实现）">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/152136925?s=400&u=9f42091737b71837cc84a6d182fd0abc2b3bfaee&v=4"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://wlayray.github.io/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'go语言实现雪花算法+生产者消费者模型',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-05 18:54:20'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css" media="defer" onload="this.media='all'"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (true) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://avatars.githubusercontent.com/u/152136925?s=400&amp;u=9f42091737b71837cc84a6d182fd0abc2b3bfaee&amp;v=4" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Ray-Box"><span class="site-name">Ray-Box</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">go语言实现雪花算法+生产者消费者模型</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-09-05T06:29:17.000Z" title="发表于 2024-09-05 14:29:17">2024-09-05</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="go语言实现雪花算法+生产者消费者模型"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="雪花算法"><a href="#雪花算法" class="headerlink" title="雪花算法"></a>雪花算法</h2><p>由Twitter提出，用于在分布式环境下生成唯一且有序的64位整型ID，并且可以确保递增性。我在实习中经常见到使用雪花算法作为数据库主键，在<a target="_blank" rel="noopener" href="https://github.com/WlayRay/ElectricSearch">ElectricSearch</a>这个项目中则用作倒排索引中文档的ID。</p>
+<h3 id="算法原理与实现"><a href="#算法原理与实现" class="headerlink" title="算法原理与实现"></a>算法原理与实现</h3><p>雪花算法的各个组成部分：</p>
+<table>
+<thead>
+<tr>
+<th>符号位(1位)</th>
+<th>时间戳(41位)</th>
+<th>机器ID(10位)</th>
+<th>序列号(12位)</th>
+</tr>
+</thead>
+</table>
+<ol>
+<li>时间戳部分：占用了41位，用来记录生成ID的时间，单位为毫秒。时间戳部分可以支持大约68年的时间跨度（从算法开始的时间点算起）。</li>
+<li>机器标识部分：占用了10位，可以用来标识不同的机器。这意味着可以支持最多2^10 &#x3D; 1024台机器。每台机器在这个集群中都有一个唯一的标识号。</li>
+<li>序列号部分：占用了12位，用来在同一个毫秒内生成多个ID。每个机器每毫秒内可以生成2^12 &#x3D; 4096个不同的ID。</li>
+<li>标志位：占用了1位，通常设为0，不使用。</li>
+</ol>
+<p>生成唯一ID的过程：</p>
+<ol>
+<li>获取当前的时间戳（毫秒级）。</li>
+<li>将当前时间戳减去某个固定的时间基点（可以为编写算法时的时间点），得到相对于起始时间的时间差。</li>
+<li>将时间差左移42位（即41位时间戳 + 1位不用的标志位）。</li>
+<li>将机器ID左移12位（即序列号占用的位数）。</li>
+<li>将上述两个结果相加。</li>
+<li>加上当前毫秒内的序列号。</li>
+</ol>
+<p>代码:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">    workerBits  <span class="type">uint8</span>  = <span class="number">10</span>                      <span class="comment">// 每台机器(节点)的ID位数 10位最大可以有2^10=1024个节点</span></span><br><span class="line">    numberBits  <span class="type">uint8</span>  = <span class="number">12</span>                      <span class="comment">// 表示每个集群下的每个节点，1毫秒内可生成的id序号的二进制位数 即每毫秒可生成 2^12-1=4096个唯一ID</span></span><br><span class="line">    workerMax   <span class="type">uint64</span> = <span class="number">-1</span> ^ (<span class="number">-1</span> &lt;&lt; workerBits) <span class="comment">// 节点ID的最大值，用于防止溢出</span></span><br><span class="line">    numberMax   <span class="type">uint64</span> = <span class="number">-1</span> ^ (<span class="number">-1</span> &lt;&lt; numberBits) <span class="comment">// 同上，用来表示生成id序号的最大值</span></span><br><span class="line">    timeShift   <span class="type">uint8</span>  = workerBits + numberBits <span class="comment">// 时间戳向左的偏移量</span></span><br><span class="line">    workerShift <span class="type">uint8</span>  = numberBits              <span class="comment">// 节点ID向左的偏移量</span></span><br><span class="line">    <span class="comment">// 41位字节作为时间戳数值的话 大约68年就会用完</span></span><br><span class="line">    <span class="comment">// 假如你2010年1月1日开始开发系统 如果不减去2010年1月1日的时间戳 那么白白浪费40年的时间戳啊！</span></span><br><span class="line">    <span class="comment">// 这个一旦定义且开始生成ID后千万不要改了 不然可能会生成相同的ID</span></span><br><span class="line">    epoch <span class="type">uint64</span> = <span class="number">1724896773911</span> <span class="comment">// 在写这个变量时的时间戳</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Worker <span class="keyword">struct</span> &#123;</span><br><span class="line">    mu        sync.Mutex</span><br><span class="line">    timestamp <span class="type">uint64</span></span><br><span class="line">    workerId  <span class="type">uint64</span></span><br><span class="line">    number    <span class="type">uint64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewWorker</span><span class="params">(workerId <span class="type">uint64</span>)</span></span> (*Worker, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> workerId &gt; workerMax &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">&quot;Worker ID excess of quantity&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &amp;Worker&#123;</span><br><span class="line">        timestamp: <span class="number">0</span>,</span><br><span class="line">        workerId:  workerId,</span><br><span class="line">        number:    <span class="number">0</span>,</span><br><span class="line">    &#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *Worker)</span></span> GetId() <span class="type">uint64</span> &#123;</span><br><span class="line">    w.mu.Lock()</span><br><span class="line">    <span class="keyword">defer</span> w.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取生成时的时间戳</span></span><br><span class="line">    now := <span class="type">uint64</span>(time.Now().UnixNano() / <span class="number">1e6</span>) <span class="comment">// 纳秒转毫秒</span></span><br><span class="line">    <span class="keyword">if</span> w.timestamp == now &#123;</span><br><span class="line">        w.number++</span><br><span class="line">        <span class="comment">// 如果当前工作节点在1毫秒内生成的ID已经超过上限 需要等待1毫秒再继续生成</span></span><br><span class="line">        <span class="keyword">if</span> w.number &gt; numberMax &#123;</span><br><span class="line">            <span class="keyword">for</span> now &lt;= w.timestamp &#123;</span><br><span class="line">                now = <span class="type">uint64</span>(time.Now().UnixNano() / <span class="number">1e6</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 如果当前时间与工作节点上一次生成ID的时间不一致 则需要重置工作节点生成ID的序号</span></span><br><span class="line">        w.number = <span class="number">0</span></span><br><span class="line">        w.timestamp = now <span class="comment">// 将机器上一次生成ID的时间更新为当前时间</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 第一段 now - epoch 为该算法目前已经运行了xxx毫秒</span></span><br><span class="line">    <span class="comment">// 如果在程序跑了一段时间修改了epoch这个值 可能会导致生成相同的ID</span></span><br><span class="line">    ID := <span class="type">uint64</span>((now-epoch)&lt;&lt;timeShift | (w.workerId &lt;&lt; workerShift) | (w.number))</span><br><span class="line">    <span class="keyword">return</span> ID</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<h3 id="算法的测试与生产者消费者模型"><a href="#算法的测试与生产者消费者模型" class="headerlink" title="算法的测试与生产者消费者模型"></a>算法的测试与生产者消费者模型</h3><p>由于雪花算法适用于分布式系统，一般用到的场景都会有不小的并发，这里我使用生产者消费者模式来测试雪花算法。</p>
+<p>代码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">workerIds := []<span class="type">uint64</span>&#123;<span class="number">123</span>, <span class="number">456</span>&#125;</span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">    p = <span class="number">10</span>     <span class="comment">//生产者数量</span></span><br><span class="line">    c = <span class="number">12</span>     <span class="comment">//消费者数量</span></span><br><span class="line">    n = <span class="number">120000</span> <span class="comment">//生成ID总数</span></span><br><span class="line">    )</span><br><span class="line"><span class="comment">//创建两个worker节点，模拟两台机器</span></span><br><span class="line">worker1, _ := util.NewWorker(workerIds[<span class="number">0</span>])</span><br><span class="line">worker2, _ := util.NewWorker(workerIds[<span class="number">1</span>])</span><br><span class="line">ids := sync.Map&#123;&#125; <span class="comment">//用于判重的集合，键为雪花算法生成的ID，值为空结构体</span></span><br><span class="line"></span><br><span class="line">repetitions, count := <span class="number">0</span>, <span class="number">0</span></span><br><span class="line">results := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">uint64</span>, n/p) <span class="comment">//用于接收生产者生成的ID</span></span><br><span class="line">pwg := sync.WaitGroup&#123;&#125;</span><br><span class="line">cwg := sync.WaitGroup&#123;&#125;</span><br><span class="line"></span><br><span class="line">cwg.Add(c)</span><br><span class="line">pwg.Add(p)</span><br><span class="line"></span><br><span class="line">start := time.Now()      <span class="comment">//记录生成ID的开始时间</span></span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; p; i++ &#123; <span class="comment">//开启p个生产者并发生成ID发送至results</span></span><br><span class="line">    <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">defer</span> pwg.Done()</span><br><span class="line">        <span class="keyword">for</span> j := <span class="number">0</span>; j &lt; n/p+<span class="number">4</span>; j++ &#123;</span><br><span class="line">            <span class="keyword">if</span> i&amp;<span class="number">1</span> == <span class="number">0</span> &#123;</span><br><span class="line">                results &lt;- worker1.GetId()</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                results &lt;- worker2.GetId()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; c; i++ &#123; <span class="comment">//开启c个消费者并发读取results并对ID进行判重</span></span><br><span class="line">    <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">defer</span> cwg.Done()</span><br><span class="line">        <span class="keyword">for</span> id := <span class="keyword">range</span> results &#123;</span><br><span class="line">            <span class="comment">// 如果ID已存在于ids集合中，则说明重复</span></span><br><span class="line">            <span class="keyword">if</span> _, loaded := ids.LoadOrStore(id, <span class="keyword">struct</span>&#123;&#125;&#123;&#125;); loaded &#123;</span><br><span class="line">                fmt.Printf(<span class="string">&quot;id: %d 重复！\n&quot;</span>, id)</span><br><span class="line">                repetitions++</span><br><span class="line">                count++</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                count++</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">pwg.Wait()</span><br><span class="line">end := time.Now() <span class="comment">//记录生成ID的结束时间</span></span><br><span class="line"><span class="built_in">close</span>(results)</span><br><span class="line">cwg.Wait()</span><br><span class="line"></span><br><span class="line">duration := end.Sub(start)</span><br><span class="line">fmt.Printf(<span class="string">&quot;生成的ID总数：%d，重复的ID共：%d个，重复率为：%.4f\n&quot;</span>, count, repetitions, <span class="type">float64</span>(repetitions)/<span class="type">float64</span>(count)*<span class="number">100</span>)</span><br><span class="line">fmt.Printf(<span class="string">&quot;生成ID耗时: %d 毫秒\n&quot;</span>, duration.Milliseconds())</span><br></pre></td></tr></table></figure>
+
+<p>测试结果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">id: 2656171589087232 重复！</span><br><span class="line">id: 2656171593281536 重复！</span><br><span class="line">生成的ID总数：120023，重复的ID共：2个，重复率为：0.0017</span><br><span class="line">生成ID耗时: 79 毫秒</span><br></pre></td></tr></table></figure>
+
+<p>可见雪花算法不仅效率高，并且在超高并发下也能保证极低的错误率。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://wlayray.github.io">WlayRay</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://wlayray.github.io/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/">https://wlayray.github.io/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://wlayray.github.io" target="_blank">Ray-Box</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%90%8E%E7%AB%AF%E7%AE%97%E6%B3%95%EF%BC%88go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%EF%BC%89/">后端算法（go语言实现）</a></div><div class="post_share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/152136925?s=400&amp;u=9f42091737b71837cc84a6d182fd0abc2b3bfaee&amp;v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" title="go语言实现布隆过滤器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">go语言实现布隆过滤器</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" title="go语言实现布隆过滤器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-22</div><div class="title">go语言实现布隆过滤器</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/152136925?s=400&amp;u=9f42091737b71837cc84a6d182fd0abc2b3bfaee&amp;v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">WlayRay</div><div class="author-info__description">做自己热爱的事</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/WlayRay"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95"><span class="toc-number">1.</span> <span class="toc-text">雪花算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.1.</span> <span class="toc-text">算法原理与实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E7%9A%84%E6%B5%8B%E8%AF%95%E4%B8%8E%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">算法的测试与生产者消费者模型</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/" title="go语言实现雪花算法+生产者消费者模型">go语言实现雪花算法+生产者消费者模型</a><time datetime="2024-09-05T06:29:17.000Z" title="发表于 2024-09-05 14:29:17">2024-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/go%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" title="go语言实现布隆过滤器">go语言实现布隆过滤器</a><time datetime="2024-08-22T04:46:52.000Z" title="发表于 2024-08-22 12:46:52">2024-08-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/C-%E9%9D%A2%E8%AF%95%E9%A2%98%E4%B9%8B%E6%89%8B%E5%86%99%E7%BA%BF%E7%A8%8B%E6%B1%A0/" title="C++面试题之手写线程池">C++面试题之手写线程池</a><time datetime="2024-08-22T04:46:21.000Z" title="发表于 2024-08-22 12:46:21">2024-08-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/C-%E9%9D%A2%E8%AF%95%E9%A2%98%E4%B9%8B%E6%89%8B%E5%86%99unique-ptr/" title="C++面试题之手写unique_ptr">C++面试题之手写unique_ptr</a><time datetime="2024-08-22T04:46:11.000Z" title="发表于 2024-08-22 12:46:11">2024-08-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/C-%E9%9D%A2%E8%AF%95%E9%A2%98%E4%B9%8B%E6%89%8B%E5%86%99shared-ptr/" title="C++面试题之手写shared_ptr">C++面试题之手写shared_ptr</a><time datetime="2024-08-22T04:45:43.000Z" title="发表于 2024-08-22 12:45:43">2024-08-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By WlayRay</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
