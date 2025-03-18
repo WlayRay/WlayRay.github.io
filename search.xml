@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>解决WSL2环境下的系统无法访问外网的问题</title>
+      <link href="/%E8%A7%A3%E5%86%B3WSL2%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AE%E5%A4%96%E7%BD%91%E7%9A%84%E9%97%AE%E9%A2%98/"/>
+      <url>/%E8%A7%A3%E5%86%B3WSL2%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AE%E5%A4%96%E7%BD%91%E7%9A%84%E9%97%AE%E9%A2%98/</url>
+      
+        <content type="html"><![CDATA[<p>WSL2默认使用NAT网络模式，可能导致DNS解析异常或外网访问受限。建议切换为镜像模式（需Windows 11 22H2及以上版本）</p><ol><li>在宿主机的powershell执行以下命令：<code>[Environment]::GetFolderPath(&#39;UserProfile&#39;)</code> 打印出用户目录，示例输出：<code>C:\Users\Administrator</code></li><li>在用户目录下创建或编辑 .wslconfig 文件：<code>notepad C:\Users\Administrator\.wslconfig</code></li><li>在.wslconfig文件中添加以下内容：<code>[wsl2] networkingMode=mirrored</code>，即可开启镜像模式（如下图）<br><img src="/../img/WSL/Snipaste_2025-03-18_13-06-15.png"></li><li>保存文件后重启WSL2：<code>wsl --shutdown</code></li></ol><p>执行完以上步骤，可在WSL2的系统中查看IP地址是否和宿主机相同<br>如果IP地址相同，则说明WSL2已经切换为镜像模式，可以访问外网。</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 环境配置 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>雪花算法（go语言实现）</title>
       <link href="/%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/"/>
       <url>/%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%9E%8B/</url>
